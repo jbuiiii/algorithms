@@ -13,7 +13,7 @@ Avoids unnecessary right-to-left scans using three rules:
 
 from typing import List
 from collections import defaultdict
-from z_algorithm import z_algorithm
+from src.z_algorithm import z_algorithm
 
 def bm(txt: str, pat: str):
     """
@@ -38,20 +38,23 @@ def bm(txt: str, pat: str):
     gs = create_gs_array() # Good Suffix
     mp = [0] * n # Matching Prefix
 
-
-
-
     # Search
 
     return res
 
-def create_bc_array(pat: str) -> dict:
-    bc = defaultdict(List[int])
+def create_bc_array(pat: str) -> List[List[int]]:
+    alphabet = sorted(set(pat))
 
-    for idx, char in enumerate(pat):
-        bc[char].append(idx)
+    res = [[-1] * len(pat) for _ in range(len(alphabet))]
 
-    return bc
+    for char in range(len(alphabet)):
+        last_seen = -1
+        for i in range(len(pat)):
+            if pat[i] == alphabet[char]:
+                last_seen = i
+            res[char][i] = last_seen
+ 
+    return res
 
 def create_gs_array(pat: str) -> List:
     m = len(pat)
@@ -79,25 +82,7 @@ def create_mp_array(pat: str) -> List:
 
     return mp
 
-def binary_search(arr: List[int], target: int) -> int:
-    """
-    Implementation of binary search that finds the rightmost value smaller than target.
-    """
-    low, high = 0, len(arr) - 1
-
-    while low <= high:
-        mid = low + (high - low) // 2
-        if arr[mid] == target:
-            return mid - 1 # modified to -1
-        elif arr[mid] > target:
-            high = mid - 1
-        else:
-            low = mid + 1
-
-    return high # modified to not return -1 
-        
-
 if __name__ == "__main__":
-    arr = "acababacaba"
-    res = create_mp_array(arr)
-    print(res)
+    pat = "yzzyzxyzzyz"
+    print(create_bc_array(pat))
+    

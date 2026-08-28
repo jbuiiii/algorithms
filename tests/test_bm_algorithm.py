@@ -1,7 +1,30 @@
 import unittest
-from src.bm_algorithm import bm
+from src.bm_algorithm import bm, create_bc_array, create_gs_array, create_mp_array
 
 class TestBMAlgorithm(unittest.TestCase):
+
+    # Smaller case tests
+    def test_bc_array(self):
+        pat = "yzzyzxyzzyz"
+        expected = [
+            [-1, -1, -1, -1, -1, 5, 5, 5, 5, 5, 5],
+            [0, 0, 0, 3, 3, 3, 6, 6, 6, 9, 9], 
+            [-1, 1, 2, 2, 4, 4, 4, 7, 8, 8, 10]
+        ]
+        actual = create_bc_array(pat)
+        self.assertEqual(expected, actual)
+
+    def test_gs_array(self):
+        pat = "abaaabacbaabaaab"
+        expected = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 12, 2, 9, 15]
+        actual = create_gs_array(pat)
+        self.assertEqual(expected, actual)
+
+    def test_mp_array(self):
+        pat = "abaaabacbaabaaab"
+        expected = [15, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 0, 0]
+        actual = create_mp_array(pat)
+        self.assertEqual(expected, actual)
 
     # Standard Cases
     def test_exact_match(self):

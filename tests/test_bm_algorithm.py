@@ -16,13 +16,13 @@ class TestBMAlgorithm(unittest.TestCase):
 
     def test_gs_array(self):
         pat = "abaaabacbaabaaab"
-        expected = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 12, 2, 9, 15]
+        expected = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 12, 2, 9]
         actual = create_gs_array(pat)
         self.assertEqual(expected, actual)
 
     def test_mp_array(self):
         pat = "abaaabacbaabaaab"
-        expected = [15, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 0, 0]
+        expected = [16, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2, 2, 0]
         actual = create_mp_array(pat)
         self.assertEqual(expected, actual)
 

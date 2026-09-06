@@ -29,17 +29,38 @@ def bm(txt: str, pat: str):
 
     """
     res = []
-    if len(txt) < len(pat):
-        return res
     n = len(txt)
+    m = len(pat)
+
+    if n < m:
+        return res
     
     # Pre-processing
-    bc = create_bc_array() # Bad Character
-    gs = create_gs_array() # Good Suffix
+    bc = create_bc_array(pat=pat) # Bad Character
+    gs = create_gs_array(pat=pat) # Good Suffix
     mp = [0] * n # Matching Prefix
 
     # Search
+    skip = 0
+    i = 0
 
+    while i <= n - m:
+        j = m - 1
+
+        # Start comparisons from right to left.
+        while j >= skip: # Ensures unnecessary comparisons are not repeated.
+            if pat[j] == txt[i + j]:
+                j -= 1
+            else:
+                break
+
+        if j < skip:
+            res[i] = 1
+
+        shift = max(bc[i], gs[i], mp[i])
+
+        # TODO: Implement shifting optimisation.
+        
     return res
 
 def create_bc_array(pat: str) -> List[List[int]]:
@@ -58,31 +79,30 @@ def create_bc_array(pat: str) -> List[List[int]]:
 
 def create_gs_array(pat: str) -> List:
     m = len(pat)
-    gs = [0] * (m + 1)
+    gs = [0] * (m)
     z = z_algorithm(pat[::-1])[::-1]
 
     for i in range(m - 1): # Don't want to compare the last value.
         j = m - z[i]
-        gs[j] = i
+        if j != m:
+            gs[j] = i + 1
 
     return gs
 
 def create_mp_array(pat: str) -> List:
     m = len(pat)
-    mp = [0] * (m + 1)
-    z = z_algorithm(pat)[::-1]
+    mp = [0] * m
+    z = z_algorithm(pat)
+    longest = 0
 
-    temp = [i for i in range(m)]
-    print(temp)
-
-    maxx = 0
-    for i in range(m, -1, -1):
-        maxx = max(z[i], maxx)
-        mp[i] = maxx
+    for i in range(m - 1, 0, -1):
+        longest = max(longest, z[i])
+        mp[i] = longest
+    mp[0] = m
 
     return mp
 
 if __name__ == "__main__":
-    pat = "yzzyzxyzzyz"
-    print(create_bc_array(pat))
+    pat = "abaaabacbaabaaab"
+    print(create_mp_array(pat))
     

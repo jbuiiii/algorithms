@@ -12,8 +12,6 @@ Avoids unnecessary right-to-left scans using three rules:
 """
 
 from typing import List
-from collections import defaultdict
-from src.z_algorithm import z_algorithm
 
 def bm(txt: str, pat: str):
     """
@@ -36,30 +34,45 @@ def bm(txt: str, pat: str):
         return res
     
     # Pre-processing
+    alphabet = sorted(set(pat))
+    character_index = {char: idx for idx, char in enumerate(alphabet)}
     bc = create_bc_array(pat=pat) # Bad Character
     gs = create_gs_array(pat=pat) # Good Suffix
-    mp = [0] * n # Matching Prefix
+    mp = create_mp_array(pat=pat) # Matching Prefix
+
 
     # Search
-    skip = 0
     i = 0
-
     while i <= n - m:
-        j = m - 1
+        j = m - 1 # where the searching begins from inside pat
+        while j >= 0 and pat[j] == txt[i + j]:
+            j -= 1
 
-        # Start comparisons from right to left.
-        while j >= skip: # Ensures unnecessary comparisons are not repeated.
-            if pat[j] == txt[i + j]:
-                j -= 1
+        if j < 0: # if the search is successful
+            res.append(i)
+            # shift can only be from matched prefix if search is successful
+            shift = m - mp[1] if m > 1 else 1
+        else:
+            # calculate all shifts
+
+            # bc
+            bad_char = txt[i + j]
+            if bad_char in character_index:
+                last_occ = bc[character_index[bad_char]][j]
             else:
-                break
+                last_occ = -1
+            bc_shift = j - last_occ
 
-        if j < skip:
-            res[i] = 1
+            # gs + mp
+            if j + 1 < m: # check if there is any matched chars to use for gs + mp
+                gs_shift = gs[j + 1]
+                mp_shift = m - mp[j + 1]
+            else: 
+                gs_shift, mp_shift = 1, 1
+            
+            shift = max(1, bc_shift, gs_shift, mp_shift)
 
-        shift = max(bc[i], gs[i], mp[i])
-
-        # TODO: Implement shifting optimisation.
+        i += shift
         
     return res
 
@@ -80,7 +93,7 @@ def create_bc_array(pat: str) -> List[List[int]]:
 def create_gs_array(pat: str) -> List:
     m = len(pat)
     gs = [0] * (m)
-    z = z_algorithm(pat[::-1])[::-1]
+    z = _z(pat[::-1])[::-1]
 
     for i in range(m - 1): # Don't want to compare the last value.
         j = m - z[i]
@@ -92,17 +105,62 @@ def create_gs_array(pat: str) -> List:
 def create_mp_array(pat: str) -> List:
     m = len(pat)
     mp = [0] * m
-    z = z_algorithm(pat)
+    z = _z(pat)
     longest = 0
 
     for i in range(m - 1, 0, -1):
-        longest = max(longest, z[i])
+        if z[i] == m - i:
+            longest = z[i]
         mp[i] = longest
     mp[0] = m
 
     return mp
 
-if __name__ == "__main__":
-    pat = "abaaabacbaabaaab"
-    print(create_mp_array(pat))
+# taken from z_algorithm.py to mitigate import errors.
+def _z(txt: str) -> List[int]:
+    """
+    Inputs:
+    - txt: String to perform the Z-algorithm on. 
+    
+    Outputs:
+    - List of Z-values = For a string str[1 ... n], define Z_i (for each position i > 1 in str) as the length of the longest 
+    substring starting at position i of str that matches its prefix (i.e. str[i . . .i+Zi-1] = str[1 . . .Zi]). The set of 
+    values {Zi, for 2 ≤ i ≤ n} for the string str[1...n] are what we refer to as its Z-values.
+    
+    Complexity:
+    - Time: O(n), where n = len(txt)
+    """
+    z = [0] * len(txt)
+    L, R = 0, 0
+
+    for k in range(1, len(txt)):
+
+        # Case 1
+        if k > R:
+            i = k
+            while i < len(txt) and txt[i] == txt[i - k]: # Avoiding for loops avoids UnboundIndexErrors
+                i += 1
+            z[k] = i - k
+            if z[k] > 0:
+                L, R = k, i
+
+        # Case 2: k <= r, i.e. exists inside a z-box
+        else: # if k <= R
+            # Case 2A
+            if z[k - L] < R - k:
+                z[k] = z[k - L]
+                # L, R are unchanged.
+            
+            # Case 2B
+            else:
+                # Explicit comparisons are needed as the z-box does not give enough information.
+                i = R
+                while i < len(txt) and txt[i] == txt[i - k]:
+                    i += 1
+                z[k] = i - k
+                # No if statement required, as this had to past the existing z-box.
+                L, R = k, i
+
+    return z
+
     

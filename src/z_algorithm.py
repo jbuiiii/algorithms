@@ -7,7 +7,7 @@ Implementation of Z-algorithm, which calculates an array containing Z_i values s
 This can be extended into pattern matching by placing the pattern at the start of the string followed by a delimiter,
 and then the text to pattern match with. Any suffixes found that are equal to the length of the pattern are valid matches.
 """
-from typing import List, Tuple
+from typing import List
 
 def z_algorithm(txt: str) -> List[int]:
     """
